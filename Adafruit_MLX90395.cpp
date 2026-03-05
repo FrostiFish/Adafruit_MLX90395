@@ -12,6 +12,7 @@
   Adafruit!
 
   Written by Kevin Townsend/ktown for Adafruit Industries.
+  SPI implementation added by Hannah Eikens
 
   MIT license, all text above must be included in any redistribution
  *****************************************************************************/
@@ -263,14 +264,21 @@ uint8_t Adafruit_MLX90395::getGain(void) {
  * @return True on command success
  */
 bool Adafruit_MLX90395::setGain(uint8_t gainval) {
-  gainval &= 0xF;
+  gainval; //&= 0xF;
   _gain = gainval; // cache it
 
-  Adafruit_BusIO_Register reg0 =
-      Adafruit_BusIO_Register(i2c_dev, MLX90395_REG_0, 2, MSBFIRST); // no need to shift I2C register << 1, because it is zero
-  Adafruit_BusIO_RegisterBits gain_bits =
-      Adafruit_BusIO_RegisterBits(&reg0, 4, MLX90395_GAIN_SHIFT);
-  return gain_bits.write(gainval);
+  if (i2c_dev) {
+    Adafruit_BusIO_Register reg0 =
+        Adafruit_BusIO_Register(i2c_dev, MLX90395_REG_0, 2, MSBFIRST); // no need to shift I2C register << 1, because it is zero
+    Adafruit_BusIO_RegisterBits gain_bits =
+        Adafruit_BusIO_RegisterBits(&reg0, 4, MLX90395_GAIN_SHIFT);
+    return gain_bits.write(gainval);
+  }
+
+  if (spi_dev) {
+    uint16_t data = gainval<MLX90395_GAIN_SHIFT;
+    return writeRegister(MLX90395_REG_0, &data); // writes to all of register 0, will override other setting. Need function to write all registers in order to remember settings.
+  }
 }
 
 /**
