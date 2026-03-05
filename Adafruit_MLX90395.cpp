@@ -279,6 +279,8 @@ bool Adafruit_MLX90395::setGain(uint8_t gainval) {
     uint16_t data = gainval<MLX90395_GAIN_SHIFT;
     return writeRegister(MLX90395_REG_0, &data); // writes to all of register 0, will override other setting. Need function to write all registers in order to remember settings.
   }
+
+  return false;
 }
 
 /**
